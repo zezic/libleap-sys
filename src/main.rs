@@ -4,20 +4,18 @@ use std::rc::Rc;
 use std::thread::sleep;
 use std::time::Duration;
 
-use autocxx::prelude::*; // use all the main autocxx functions
-use autocxx::subclass::*; // use all the main autocxx functions
-use autocxx::subclass::prelude::*; // use all the main autocxx functions
+use autocxx::prelude::*;
+use autocxx::subclass::*;
 
 include_cpp! {
     #include "Leap.h"
-    safety!(unsafe_ffi) // see details of unsafety policies described in the 'safety' section of the book
-    // generate!("Leap::Listener") // add this line for each function or type you wish to generate
-    generate!("Leap::Controller") // add this line for each function or type you wish to generate
-    generate!("Leap::ControllerImplementation") // add this line for each function or type you wish to generate
-    generate!("Leap::Frame") // add this line for each function or type you wish to generate
-    generate!("Leap::HandList") // add this line for each function or type you wish to generate
-    generate!("Leap::Hand") // add this line for each function or type you wish to generate
-    generate!("Leap::Vector") // add this line for each function or type you wish to generate
+    safety!(unsafe_ffi)
+    generate!("Leap::Controller")
+    generate!("Leap::ControllerImplementation")
+    generate!("Leap::Frame")
+    generate!("Leap::HandList")
+    generate!("Leap::Hand")
+    generate!("Leap::Vector")
     subclass!("Leap::Listener", MyListener)
 }
 
@@ -26,6 +24,7 @@ include_cpp! {
 pub struct MyListener {}
 
 impl ffi::Leap::Listener_methods for MyListener {
+    #[allow(non_snake_case)]
     fn onFrame(&mut self, controller: &ffi::Leap::Controller) {
         let frame = controller.frame(autocxx::c_int(0)).within_unique_ptr();
         let id = frame.id();
@@ -48,17 +47,7 @@ fn main() {
     let mut listener = MyListener::default_rust_owned();
     let listener_real = unsafe { Rc::get_mut_unchecked(&mut listener) };
     let listener_pin = listener_real.get_mut().pin_mut();
-
-    // let listener_pin = unsafe {
-    //     Pin::new_unchecked(listener.as_ref().borrow().as_ref())
-    // };
-    // let ctrl_impl = ffi::Leap::ControllerImplementation::new().within_unique_ptr();
     let mut controller = ffi::Leap::Controller::new1().within_unique_ptr();
-
     controller.pin_mut().addListener(listener_pin);
-    // let listener = 123;
-    // controller.pin_mut().addListener(listener.as_ref().borrow().as_ref());
-
     sleep(Duration::from_secs(30));
-    println!("Hello, world!");
 }
