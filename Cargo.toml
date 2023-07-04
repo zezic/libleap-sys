@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 autocxx = "0.23.1"
 cxx = "1.0"
+rosc = "0.9.1"
 
 [build-dependencies]
 autocxx-build = "0.23.1"
